@@ -4,6 +4,10 @@
 
 **[Visit website](https://wanghong-yang.github.io/Floe/)** · [Star Floe on GitHub](https://github.com/WangHong-yang/Floe)
 
+<a href="https://www.producthunt.com/products/floe-4?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-floe-5" target="_blank" rel="noopener noreferrer"><img alt="Floe - Offline Voice Typing for Mac | Product Hunt" width="250" height="54" src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1306421&amp;theme=light&amp;t=1793955034766"></a>
+
+Enjoying Floe? **[Star us on GitHub](https://github.com/WangHong-yang/Floe)** to show your support and help others find it.
+
 Floe is a local speech-to-text and voice typing app for Apple Silicon Macs. Dictate in Chinese and English, including mixed-language speech, without a cloud transcription service. Hold 🌐 / Fn to speak, and Floe types into your focused text field as you talk.
 
 **[Download Floe 0.0.1 for Apple Silicon](https://github.com/WangHong-yang/Floe/releases/download/v0.0.1/Floe-0.0.1-arm64.dmg)** · [Releases](https://github.com/WangHong-yang/Floe/releases)
