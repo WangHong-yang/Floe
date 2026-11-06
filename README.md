@@ -4,7 +4,7 @@
 
 **[Visit website](https://wanghong-yang.github.io/Floe/)** · [Star Floe on GitHub](https://github.com/WangHong-yang/Floe)
 
-<a href="https://www.producthunt.com/products/floe-4?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-floe-5" target="_blank" rel="noopener noreferrer"><img alt="Floe - Offline Voice Typing for Mac | Product Hunt" width="250" height="54" src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1306421&amp;theme=light&amp;t=1793955034766"></a>
+<a href="https://www.producthunt.com/products/floe-4?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-floe-5" target="_blank" rel="noopener noreferrer"><img alt="Floe - Offline Voice Typing for Mac | Product Hunt" width="180" height="39" src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1306421&amp;theme=dark&amp;t=1793955228554"></a>
 
 Enjoying Floe? **[Star us on GitHub](https://github.com/WangHong-yang/Floe)** to show your support and help others find it.
 
