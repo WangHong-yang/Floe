@@ -1,4 +1,4 @@
-![Floe — glass voice waveform](Resources/FloeHeader.png)
+![Floe — glass voice waveform](Resources/FloeBanner.png)
 
 # Floe
 
