@@ -1,8 +1,10 @@
 ![Floe — glass voice waveform](Resources/FloeBanner.png)
 
-# Floe
+# Floe · Offline voice typing for Mac
 
-Local Chinese & English dictation for Apple Silicon Macs. Hold 🌐 / Fn to speak, and Floe types into your focused text field as you talk.
+**[Visit website](https://wanghong-yang.github.io/Floe/)** · [Star Floe on GitHub](https://github.com/WangHong-yang/Floe)
+
+Floe is a local speech-to-text and voice typing app for Apple Silicon Macs. Dictate in Chinese and English, including mixed-language speech, without a cloud transcription service. Hold 🌐 / Fn to speak, and Floe types into your focused text field as you talk.
 
 **[Download Floe 0.0.1 for Apple Silicon](https://github.com/WangHong-yang/Floe/releases/download/v0.0.1/Floe-0.0.1-arm64.dmg)** · [Releases](https://github.com/WangHong-yang/Floe/releases)
 
