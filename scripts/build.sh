@@ -40,15 +40,16 @@ cp "vendor/$MODEL/encoder.int8.onnx" "vendor/$MODEL/decoder.onnx" \
 cp vendor/LICENSE-sherpa-onnx vendor/LICENSE-X-ASR vendor/LICENSE-onnxruntime "$APP/Contents/Resources/"
 cp "vendor/$MODEL/README.md" "$APP/Contents/Resources/Model/"
 printf '%s  %s\n' 28fc94d67aae53d8c58010fcfb16fc8c2f8dd263e03f3490c98210e354e8f914 Resources/bpe.vocab | shasum -a 256 -c
-cp Resources/ViveLogo.png "$APP/Contents/Resources/"
+rm -f "$APP/Contents/Resources/ViveLogo.png" "$APP/Contents/Resources/ViveIcon.icns"
+cp Resources/FloeLogo.png "$APP/Contents/Resources/"
 cp Resources/bpe.vocab "$APP/Contents/Resources/Model/"
 SDK="$(xcrun --show-sdk-path)"
 export CLANG_MODULE_CACHE_PATH="$ROOT/build/module-cache"
 export SWIFT_MODULECACHE_PATH="$ROOT/build/module-cache"
 xcrun swiftc -O -sdk "$SDK" -module-cache-path "$ROOT/build/module-cache" \
     Sources/GlassArtwork.swift scripts/render-icons.swift -o build/render-icons
-build/render-icons build/AppIcon.iconset Resources/ViveLogo.png
-iconutil -c icns build/AppIcon.iconset -o "$APP/Contents/Resources/ViveIcon.icns"
+build/render-icons build/AppIcon.iconset Resources/FloeLogo.png
+iconutil -c icns build/AppIcon.iconset -o "$APP/Contents/Resources/FloeIcon.icns"
 xcrun clang -O2 -arch arm64 -mmacosx-version-min=14.0 -I vendor -I Sources \
     -c Sources/ASRBridge.c -o build/ASRBridge.o
 xcrun swiftc -O -swift-version 5 -target arm64-apple-macosx14.0 -sdk "$SDK" \

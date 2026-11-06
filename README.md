@@ -1,3 +1,5 @@
+![Floe — glass voice waveform](Resources/FloeHeader.png)
+
 # Floe
 
 Local Chinese & English dictation for Apple Silicon Macs. Hold 🌐 / Fn to speak, and Floe types into your focused text field as you talk.

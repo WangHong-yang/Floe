@@ -3,7 +3,7 @@ import AppKit
 /// Shared glass artwork for the app bundle and settings.
 enum GlassArtwork {
     static func logo(size: CGFloat, assetURL: URL? = nil) -> NSImage {
-        let url = assetURL ?? Bundle.main.url(forResource: "ViveLogo", withExtension: "png")
+        let url = assetURL ?? Bundle.main.url(forResource: "FloeLogo", withExtension: "png")
         guard let url, let source = NSImage(contentsOf: url) else {
             return NSImage(size: NSSize(width: size, height: size))
         }

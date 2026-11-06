@@ -11,7 +11,7 @@
 	<key>CFBundleDisplayName</key>
 	<string>Floe</string>
 	<key>CFBundleIconFile</key>
-	<string>ViveIcon</string>
+	<string>FloeIcon</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
