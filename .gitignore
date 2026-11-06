@@ -1,0 +1,8 @@
+/vendor/
+/build/
+/dist/
+/design/
+/profiling/
+.venv*/
+*.o
+.DS_Store
