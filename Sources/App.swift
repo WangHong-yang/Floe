@@ -1,6 +1,7 @@
 import AppKit
 import SwiftUI
 import AVFoundation
+import Combine
 
 final class AppModel: ObservableObject {
     @Published var status = "Loading local model…"
@@ -98,6 +99,7 @@ final class AppModel: ObservableObject {
             self?.refreshPermissions()
             self?.probePermissions()
         }
+        monitorTimer?.tolerance = 0.5
         probePermissions()
         configurationObserver = NotificationCenter.default.addObserver(
             forName: .AVAudioEngineConfigurationChange, object: nil, queue: .main) { [weak self] _ in
@@ -150,9 +152,11 @@ final class AppModel: ObservableObject {
         let newlyInput = input && !inputAllowed
         let newlyAX = accessibility && !accessibilityAllowed
         let previous = inputAllowed
-        micAllowed = microphone
-        accessibilityAllowed = accessibility
-        inputAllowed = input
+        // @Published emits even for equal values. Stable permission polls must
+        // not invalidate every settings, waveform and suggestion view.
+        if micAllowed != microphone { micAllowed = microphone }
+        if accessibilityAllowed != accessibility { accessibilityAllowed = accessibility }
+        if inputAllowed != input { inputAllowed = input }
         if inputAllowed && (!previous || !listenerStarted) { listenerStarted = keys.start() }
         if !inputAllowed && previous {
             keys.stop()
@@ -162,12 +166,22 @@ final class AppModel: ObservableObject {
         if newlyMic { permissionFeedback = "Microphone enabled ✓" }
         if newlyInput { permissionFeedback = "Input Monitoring enabled ✓" }
         if newlyAX { permissionFeedback = "Accessibility enabled ✓" }
-        if micAllowed && inputAllowed && accessibilityAllowed { permissionFeedback = "All permissions granted. Ready to dictate ✓" }
-        if ready && !recording && !busy { status = idleStatus }
+        let grantedFeedback = "All permissions granted. Ready to dictate ✓"
+        if micAllowed && inputAllowed && accessibilityAllowed && permissionFeedback != grantedFeedback {
+            permissionFeedback = grantedFeedback
+        }
+        if ready && !recording && !busy && status != idleStatus { status = idleStatus }
+    }
+
+    private var needsFreshPermissionProbe: Bool {
+        !inputAllowed || !accessibilityAllowed || needsPermissionRestart
     }
 
     private func probePermissions() {
-        guard !probeRunning, let executable = Bundle.main.executableURL else { return }
+        // A fresh process is only necessary while cached TCC grants may be
+        // stale. Revocations are still detected by refreshPermissions().
+        guard needsFreshPermissionProbe, !probeRunning,
+              let executable = Bundle.main.executableURL else { return }
         probeRunning = true
         permissionQueue.async {
             let process = Process()
@@ -190,7 +204,7 @@ final class AppModel: ObservableObject {
                 let input = result["input"] ?? false
                 let ax = result["accessibility"] ?? false
                 let cached = (input && !CGPreflightListenEventAccess()) || (ax && !AXIsProcessTrusted())
-                self.needsPermissionRestart = cached
+                if self.needsPermissionRestart != cached { self.needsPermissionRestart = cached }
                 self.applyPermissions(microphone: result["microphone"] ?? false,
                                       input: input, accessibility: ax)
                 if cached && !self.restartScheduled && !self.recording && !self.busy && !self.requestingMicrophone {
@@ -199,6 +213,33 @@ final class AppModel: ObservableObject {
                 }
             }
         }
+    }
+
+    static func testIdleUpdates() -> Bool {
+        let model = AppModel()
+        model.ready = true
+        model.micAllowed = true
+        model.inputAllowed = true
+        model.accessibilityAllowed = true
+        model.listenerStarted = true
+        model.permissionFeedback = "All permissions granted. Ready to dictate ✓"
+        model.status = model.idleStatus
+        var updates = 0
+        let subscription = model.objectWillChange.sink { updates += 1 }
+        for _ in 0..<30 {
+            model.applyPermissions(microphone: true, input: true, accessibility: true)
+        }
+        guard updates == 0, !model.needsFreshPermissionProbe else { return false }
+        model.applyPermissions(microphone: false, input: true, accessibility: true)
+        guard !model.micAllowed, model.status == "Allow microphone access", updates > 0 else { return false }
+        // Simulate a cached input grant disappearing without starting a listener.
+        model.inputAllowed = false
+        guard model.needsFreshPermissionProbe else { return false }
+        model.inputAllowed = true
+        model.needsPermissionRestart = true
+        guard model.needsFreshPermissionProbe else { return false }
+        withExtendedLifetime(subscription) {}
+        return true
     }
 
     func requestMic() {
@@ -715,9 +756,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Updates and permission restarts must not leave a second listener/bar.
         if let identifier = Bundle.main.bundleIdentifier {
-            for other in NSRunningApplication.runningApplications(withBundleIdentifier: identifier)
-                where other.processIdentifier != ProcessInfo.processInfo.processIdentifier {
-                other.terminate()
+            let identifiers = identifier == PreferencesMigration.identifier
+                ? [identifier, PreferencesMigration.legacyIdentifier] : [identifier]
+            for oldIdentifier in identifiers {
+                for other in NSRunningApplication.runningApplications(withBundleIdentifier: oldIdentifier)
+                    where other.processIdentifier != ProcessInfo.processInfo.processIdentifier {
+                    other.terminate()
+                }
             }
         }
         NSApp.setActivationPolicy(.accessory)

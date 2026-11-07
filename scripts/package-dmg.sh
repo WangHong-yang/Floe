@@ -44,6 +44,10 @@ Floe's settings also offers a draggable app icon and Show in Finder.
 Return to Floe to check that all three permissions show as enabled.
 If macOS asks you to quit and reopen Floe, do so. If the shortcut still
 does not respond after granting permissions, quit and reopen Floe.
+This build uses a distinct Floe identity, so grant all three permissions
+again even if you previously authorized Perceptive or GlobeTalk. Those old
+entries belong to the former identity; the new entry should be Floe.
+Your hotwords and preferences are migrated when you first open this build.
 Updates to this preview may require granting permissions again.
 
 SET UP THE SHORTCUT

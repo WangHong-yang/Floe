@@ -12,11 +12,17 @@ struct RecordingBar: View {
     static let width: CGFloat = 76
     static let height: CGFloat = 30
     var body: some View {
-        TimelineView(.animation(minimumInterval: 1.0 / 20,
-            paused: reduceMotion || (!model.recording && !model.busy))) { context in
-            GlassWaveform(level: model.audioLevel, finishing: model.busy,
-                time: reduceMotion ? 0 : context.date.timeIntervalSinceReferenceDate,
-                reduceMotion: reduceMotion)
+        Group {
+            if (model.recording || model.busy) && !reduceMotion {
+                TimelineView(.animation(minimumInterval: 1.0 / 20)) { context in
+                    GlassWaveform(level: model.audioLevel, finishing: model.busy,
+                        time: context.date.timeIntervalSinceReferenceDate)
+                }
+            } else {
+                // A hidden idle panel must not retain an animation scheduler.
+                GlassWaveform(level: model.audioLevel, finishing: model.busy,
+                    time: 0, reduceMotion: true)
+            }
         }
         .accessibilityLabel(model.busy ? "Finishing dictation" : "Recording")
     }

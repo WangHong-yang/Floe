@@ -5,7 +5,7 @@
 	<key>CFBundleExecutable</key>
 	<string>Floe</string>
 	<key>CFBundleIdentifier</key>
-	<string>local.globetalk.app</string>
+	<string>io.github.wanghongyang.floe</string>
 	<key>CFBundleName</key>
 	<string>Floe</string>
 	<key>CFBundleDisplayName</key>

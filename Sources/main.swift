@@ -2,6 +2,18 @@ import AppKit
 import AVFoundation
 import SwiftUI
 
+if CommandLine.arguments.contains("--test-preferences-migration") {
+    guard PreferencesMigration.test() else { exit(1) }
+    print("Preferences migration passed: hotwords and interval preserved, new settings win, unrelated keys omitted.")
+    exit(0)
+}
+
+if CommandLine.arguments.contains("--test-idle-updates") {
+    guard AppModel.testIdleUpdates() else { exit(1) }
+    print("Idle updates passed: stable polls emit no UI updates; fresh probes are disabled after grants and reenabled for stale/missing grants.")
+    exit(0)
+}
+
 if CommandLine.arguments.contains("--test-permission-restart") {
     for visible in [false, true] {
         for guide: PermissionGuide? in [nil, .input, .accessibility] {
@@ -243,6 +255,7 @@ if CommandLine.arguments.count >= 3 && CommandLine.arguments[1] == "--transcribe
         exit(1)
     }
 }
+PreferencesMigration.run()
 let delegate = AppDelegate()
 NSApplication.shared.delegate = delegate
 NSApplication.shared.run()

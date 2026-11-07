@@ -8,6 +8,8 @@ plutil -lint "$APP/Contents/Info.plist"
 "$APP/Contents/MacOS/Floe" --test-streaming-patches
 "$APP/Contents/MacOS/Floe" --test-hotwords
 "$APP/Contents/MacOS/Floe" --test-permission-restart
+"$APP/Contents/MacOS/Floe" --test-idle-updates
+"$APP/Contents/MacOS/Floe" --test-preferences-migration
 "$APP/Contents/MacOS/Floe" --test-audio-tail
 "$APP/Contents/MacOS/Floe" --test-dictation-clipboard
 "$APP/Contents/MacOS/Floe" --transcribe "$MODEL"/test_wavs/*.wav
