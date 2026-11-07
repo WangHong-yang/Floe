@@ -58,8 +58,15 @@ xcrun swiftc -O -swift-version 5 -target arm64-apple-macosx14.0 -sdk "$SDK" \
     -L "vendor/$RUNTIME/lib" -lsherpa-onnx-c-api \
     -Xlinker -rpath -Xlinker @executable_path/../Frameworks \
     -o "$APP/Contents/MacOS/Floe"
-codesign --force --sign - "$APP/Contents/Frameworks/libonnxruntime.dylib"
-codesign --force --sign - "$APP/Contents/Frameworks/libsherpa-onnx-c-api.dylib"
-codesign --force --sign - "$APP"
+# A stable certificate keeps macOS privacy grants (Accessibility, Input
+# Monitoring) across rebuilds; ad-hoc signatures change with every build.
+SIGN_ID="${FLOE_SIGN_IDENTITY:-Floe Local Signing}"
+if ! security find-identity -p codesigning | grep -q "\"$SIGN_ID\""; then
+    echo "未找到签名证书 \"$SIGN_ID\"，使用 ad-hoc 签名（每次重建都需重新授权）。"
+    SIGN_ID="-"
+fi
+codesign --force --sign "$SIGN_ID" "$APP/Contents/Frameworks/libonnxruntime.dylib"
+codesign --force --sign "$SIGN_ID" "$APP/Contents/Frameworks/libsherpa-onnx-c-api.dylib"
+codesign --force --sign "$SIGN_ID" "$APP"
 codesign --verify --deep --strict "$APP"
 echo "已构建：$APP"
