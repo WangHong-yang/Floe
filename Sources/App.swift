@@ -14,7 +14,35 @@ final class AppModel: ObservableObject {
     @Published var requestingMicrophone = false
     @Published var accessibilityAllowed = false
     @Published var inputAllowed = false
-    @Published var useGlobe = UserDefaults.standard.object(forKey: "useGlobe") as? Bool ?? true
+    @Published var hotkey = Hotkey.load()
+    @Published var recordingHotkey = false
+    @Published var recordingStarted: Date?
+    @Published var editingPrompt = false
+    @Published var promptDraft = ""
+    var paraphrasePrompt: String {
+        get { UserDefaults.standard.string(forKey: "paraphrasePrompt") ?? Paraphraser.defaultPrompt }
+        set {
+            let trimmed = newValue.trimmingCharacters(in: .whitespacesAndNewlines)
+            if trimmed.isEmpty || trimmed == Paraphraser.defaultPrompt.trimmingCharacters(in: .whitespacesAndNewlines) {
+                UserDefaults.standard.removeObject(forKey: "paraphrasePrompt")
+            } else {
+                UserDefaults.standard.set(newValue, forKey: "paraphrasePrompt")
+            }
+        }
+    }
+    var usingCustomPrompt: Bool { UserDefaults.standard.string(forKey: "paraphrasePrompt") != nil }
+    @Published var inputDevices: [InputDevice] = []
+    @Published var saveHistory = UserDefaults.standard.object(forKey: "saveHistory") as? Bool ?? true
+    let history = HistoryStore()
+    var showHistory: (() -> Void)?
+    @Published var inputDeviceUID = UserDefaults.standard.string(forKey: "inputDeviceUID") ?? ""
+    /// Press once to start, press again (or Esc) to stop and transcribe.
+    @Published var toggleMode = UserDefaults.standard.object(forKey: "toggleMode") as? Bool ?? true
+    @Published var liveStreaming = UserDefaults.standard.object(forKey: "liveStreaming") as? Bool ?? false
+    @Published var paraphraseEnabled = UserDefaults.standard.object(forKey: "paraphraseEnabled") as? Bool ?? false
+    @Published var paraphraseModel = UserDefaults.standard.string(forKey: "paraphraseModel") ?? Paraphraser.defaultModel
+    @Published var paraphraseProfile = UserDefaults.standard.string(forKey: "paraphraseProfile") ?? ""
+    @Published var paraphraseRegion = UserDefaults.standard.string(forKey: "paraphraseRegion") ?? ""
     @Published var autoInsert = UserDefaults.standard.object(forKey: "autoInsert") as? Bool ?? true
     @Published var permissionGuide: PermissionGuide?
     @Published var listenerStarted = false
@@ -45,6 +73,7 @@ final class AppModel: ObservableObject {
     private let permissionQueue = DispatchQueue(label: "GlobeTalk.Permissions")
     private let capture = AudioCapture()
     private let keys = KeyMonitor()
+    private let hotkeyRecorder = HotkeyRecorder()
     private let inference = DispatchQueue(label: "GlobeTalk.ASR", qos: .userInitiated)
     // Recognizer and stream are owned exclusively by the inference queue.
     private var recognizer: OpaquePointer?
@@ -64,9 +93,11 @@ final class AppModel: ObservableObject {
     private var suggestionTimer: Timer?
     private var releaseTimer: Timer?
     private var finishing = false
+    private var sampleCount = 0
 
     func setup() {
-        keys.useGlobe = useGlobe
+        keys.hotkey = hotkey
+        keys.toggleTap = toggleMode
         keys.onHold = { [weak self] down in
             // A CGEventTap callback must return promptly. Starting AVAudioEngine
             // synchronously here can cause macOS to disable the tap.
@@ -74,14 +105,23 @@ final class AppModel: ObservableObject {
                 guard let self else { return }
                 self.lastTrigger = "\(self.keyName) \(down ? "pressed" : "released")"
                 self.held = down
-                if down { self.begin() }
+                if self.toggleMode {
+                    guard down else { return }
+                    if self.recording { self.finish() } else { self.begin() }
+                } else if down { self.begin() }
                 else if self.recording { self.finish() }
             }
         }
-        keys.onCancel = { [weak self] in DispatchQueue.main.async { self?.cancel() } }
+        keys.onCancel = { [weak self] in
+            DispatchQueue.main.async {
+                guard let self else { return }
+                // Esc always discards the recording; press the shortcut again to finish.
+                self.cancel()
+            }
+        }
         keys.onUnavailable = { [weak self] in DispatchQueue.main.async { self?.cancel() } }
         keys.onInteraction = { [weak self] in
-            guard let self, self.recording || self.busy,
+            guard let self, !self.toggleMode, self.recording || self.busy,
                   NSWorkspace.shared.frontmostApplication?.processIdentifier != ProcessInfo.processInfo.processIdentifier else { return }
             DispatchQueue.main.async {
                 if self.recording || self.busy { self.cancel() }
@@ -103,7 +143,8 @@ final class AppModel: ObservableObject {
         probePermissions()
         configurationObserver = NotificationCenter.default.addObserver(
             forName: .AVAudioEngineConfigurationChange, object: nil, queue: .main) { [weak self] _ in
-                guard let self, self.recording else { return }
+                guard let self, self.recording,
+                      Date().timeIntervalSince(self.capture.lastDeviceSwitch) > 1.5 else { return }
                 self.cancel()
                 self.status = "Input device changed. Start recording again."
             }
@@ -128,14 +169,21 @@ final class AppModel: ObservableObject {
         }
     }
 
-    var keyName: String { useGlobe ? "🌐 / Fn" : "Right Option" }
+    var keyName: String { hotkey.name }
+    /// Paraphrasing rewrites the whole text, so it always inserts once at the end.
+    private var streamsLive: Bool { liveStreaming && !paraphraseEnabled }
+    private var listeningStatus: String {
+        if toggleMode { return "Listening · Press \(keyName) to finish, Esc to cancel" }
+        return streamsLive ? "Listening · Inserting text live. Esc to stop" : "Listening · Release to insert. Esc to stop"
+    }
+    private var maxRecording: TimeInterval { toggleMode ? 600 : 120 }
     private var idleStatus: String {
         if !micAllowed { return "Allow microphone access" }
         if !inputAllowed { return "Allow Input Monitoring to detect \(keyName)" }
         if autoInsert && !accessibilityAllowed { return "Allow Accessibility to insert text" }
         if needsPermissionRestart { return "Permissions granted · Restarting to apply" }
         if !listenerStarted { return "Permissions granted · Reopen the app to start the shortcut listener" }
-        return "Ready · Hold \(keyName) to speak"
+        return toggleMode ? "Ready · Press \(keyName) to speak" : "Ready · Hold \(keyName) to speak"
     }
 
     func refreshPermissions() {
@@ -288,23 +336,77 @@ final class AppModel: ObservableObject {
         }
     }
 
-    func changeKey() {
+    func setHotkey(_ key: Hotkey) {
         held = false
         cancel()
-        UserDefaults.standard.set(useGlobe, forKey: "useGlobe")
-        keys.useGlobe = useGlobe
+        hotkey = key
+        key.save()
+        keys.hotkey = key
         if inputAllowed { listenerStarted = keys.start() }
-        if ready { status = "Ready · Hold \(keyName) to speak" }
+        if ready { status = idleStatus }
+    }
+
+    func applyToggleMode() { keys.toggleTap = toggleMode }
+
+    func refreshInputDevices() {
+        let devices = InputDevice.all()
+        if inputDevices != devices { inputDevices = devices }
+    }
+
+    func setInputDevice(_ uid: String) {
+        if recording || busy { cancel() }
+        inputDeviceUID = uid
+        UserDefaults.standard.set(uid, forKey: "inputDeviceUID")
+        capture.selectInput(uid: uid)
+    }
+
+    func recordHotkey() {
+        guard !recordingHotkey else {
+            hotkeyRecorder.stop()
+            recordingHotkey = false
+            keys.suspended = false
+            return
+        }
+        held = false
+        cancel()
+        recordingHotkey = true
+        keys.suspended = true
+        hotkeyRecorder.start { [weak self] key in
+            guard let self else { return }
+            self.recordingHotkey = false
+            self.keys.suspended = false
+            if let key { self.setHotkey(key) }
+        }
+    }
+
+    func saveParaphraseSettings() {
+        let d = UserDefaults.standard
+        d.set(paraphraseEnabled, forKey: "paraphraseEnabled")
+        d.set(paraphraseModel.trimmingCharacters(in: .whitespaces), forKey: "paraphraseModel")
+        d.set(paraphraseProfile.trimmingCharacters(in: .whitespaces), forKey: "paraphraseProfile")
+        d.set(paraphraseRegion.trimmingCharacters(in: .whitespaces), forKey: "paraphraseRegion")
+    }
+
+    private var paraphraseConfig: Paraphraser.Config {
+        let glossary = hotwordsEnabled
+            ? hotwordText.split(whereSeparator: \.isNewline).map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
+            : []
+        return Paraphraser.Config(
+            model: paraphraseModel.trimmingCharacters(in: .whitespaces),
+            profile: paraphraseProfile.trimmingCharacters(in: .whitespaces),
+            region: paraphraseRegion.trimmingCharacters(in: .whitespaces),
+            prompt: paraphrasePrompt,
+            glossary: glossary)
     }
 
     func begin() {
-        if recording, finishing, releaseTimer != nil {
+        if recording, finishing, releaseTimer != nil, !toggleMode {
             releaseTimer?.invalidate()
             releaseTimer = nil
             finishing = false
             busy = false
-            status = "Listening · Inserting text live. Esc to stop"
-            timeout = Timer.scheduledTimer(withTimeInterval: 120, repeats: false) { [weak self] _ in self?.finish() }
+            status = listeningStatus
+            timeout = Timer.scheduledTimer(withTimeInterval: maxRecording, repeats: false) { [weak self] _ in self?.finish() }
             changed?()
             return
         }
@@ -315,6 +417,9 @@ final class AppModel: ObservableObject {
             changed?()
             return
         }
+        capture.selectInput(uid: inputDeviceUID)
+        sampleCount = 0
+        recordingStarted = Date()
         session = UUID()
         correctionObserver?.stop()
         dismissSuggestion()
@@ -329,7 +434,7 @@ final class AppModel: ObservableObject {
         text = ""
         audioLevel = 0
         recording = true
-        status = "Listening · Inserting text live. Esc to stop"
+        status = listeningStatus
         changed?()
         inference.async {
             if let r = self.recognizer { _ = GTBeginWithHotwords(r, words) }
@@ -340,6 +445,7 @@ final class AppModel: ObservableObject {
                 guard let r = self.recognizer else { return }
                 let energy = samples.reduce(0.0) { $0 + Double($1) * Double($1) }
                 let level = min(1, sqrt(energy / Double(max(1, samples.count))) * 12)
+                self.sampleCount += samples.count
                 samples.withUnsafeBufferPointer { GTAccept(r, $0.baseAddress, Int32(samples.count)) }
                 let value = self.readText(r)
                 DispatchQueue.main.async {
@@ -357,7 +463,7 @@ final class AppModel: ObservableObject {
             startSound?.volume = 0.25
             startSound?.play()
             try capture.start()
-            timeout = Timer.scheduledTimer(withTimeInterval: 120, repeats: false) { [weak self] _ in
+            timeout = Timer.scheduledTimer(withTimeInterval: maxRecording, repeats: false) { [weak self] _ in
                 self?.finish()
             }
         } catch {
@@ -398,6 +504,24 @@ final class AppModel: ObservableObject {
                 guard self.session == id else { return }
                 self.outputTimer?.invalidate()
                 self.outputTimer = nil
+                guard self.paraphraseEnabled, !value.isEmpty else { return self.deliver(value, id, raw: value) }
+                self.text = value
+                self.status = "Rewriting with Bedrock…"
+                self.changed?()
+                Paraphraser.run(value, self.paraphraseConfig) { result in
+                    guard self.session == id else { return }
+                    switch result {
+                    case .success(let rewritten): self.deliver(rewritten, id, raw: value)
+                    case .failure(let error):
+                        self.deliver(value, id, raw: value, note: "Rewrite failed (\(error.localizedDescription)) · Inserted raw text")
+                    }
+                }
+            }
+        }
+    }
+
+    private func deliver(_ value: String, _ id: UUID, raw: String, note: String? = nil) {
+                if saveHistory && !value.isEmpty { history.add(raw: raw, final: value) }
                 let delay = max(0, self.pasteInterval - Date().timeIntervalSince(self.lastOutputTime))
                 DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
                     guard self.session == id else { return }
@@ -411,18 +535,17 @@ final class AppModel: ObservableObject {
                         self.busy = false
                         if !self.outputBlocked { self.correctionObserver?.arm(value) }
                         if value.isEmpty { self.status = "No speech detected · Try again" }
+                        else if let note { self.status = note }
                         else if copied { self.status = "Finished · Full transcript copied" }
                         else { self.status = "Finished · Copy the transcript from the menu bar" }
                         self.changed?()
                     }
                 }
-            }
-        }
     }
 
     private func queueOutput(_ value: String) {
         pendingOutput = value
-        guard autoInsert, !outputBlocked else { return }
+        guard autoInsert, streamsLive, !outputBlocked else { return }
         // Do not overwrite the clipboard before an earlier paste is consumed.
         let delay = pasteInterval - Date().timeIntervalSince(lastOutputTime)
         if delay <= 0 {
@@ -464,7 +587,7 @@ final class AppModel: ObservableObject {
         recording = false
         busy = false
         text = ""
-        status = "Canceled · Hold \(keyName) to start again"
+        status = "Canceled · " + (toggleMode ? "Press" : "Hold") + " \(keyName) to start again"
         inference.async { if let r = self.recognizer { GTCancel(r) } }
         changed?()
     }
@@ -610,12 +733,78 @@ struct ControlView: View {
                     NSWorkspace.shared.activateFileViewerSelecting([Bundle.main.bundleURL])
                 }.controlSize(.small)
             }
-            Picker("Hold to talk", selection: $model.useGlobe) {
-                Text("🌐 / Fn").tag(true)
-                Text("Right Option (alternate)").tag(false)
-            }.pickerStyle(.segmented).onChange(of: model.useGlobe) { model.changeKey() }
-            Toggle("Insert text into the focused field while speaking", isOn: $model.autoInsert)
+            HStack {
+                Text("Shortcut").font(.callout)
+                Text(model.recordingHotkey ? "Press a key… (Esc to cancel)" : model.hotkey.name)
+                    .font(.callout.monospaced()).padding(.horizontal, 8).padding(.vertical, 3)
+                    .background(.teal.opacity(model.recordingHotkey ? 0.25 : 0.12), in: RoundedRectangle(cornerRadius: 6))
+                Spacer()
+                Button(model.recordingHotkey ? "Cancel" : "Change…") { model.recordHotkey() }
+                Menu("Presets") {
+                    Button("🌐 / Fn") { model.setHotkey(.fn) }
+                    Button("Right ⌥ Option") { model.setHotkey(.rightOption) }
+                }.fixedSize()
+            }
+            HStack {
+                Text("Microphone").font(.callout)
+                Picker("Microphone", selection: Binding(get: { model.inputDeviceUID },
+                                                         set: { model.setInputDevice($0) })) {
+                    Text("System default").tag("")
+                    ForEach(model.inputDevices) { Text($0.name).tag($0.uid) }
+                    if !model.inputDeviceUID.isEmpty && !model.inputDevices.contains(where: { $0.uid == model.inputDeviceUID }) {
+                        Text("Unavailable device (using default)").tag(model.inputDeviceUID)
+                    }
+                }.labelsHidden()
+                Button {
+                    model.refreshInputDevices()
+                } label: { Image(systemName: "arrow.clockwise") }.help("Refresh device list")
+            }
+            .onAppear { model.refreshInputDevices() }
+            Toggle("Press once to start, again to finish (Esc cancels)", isOn: $model.toggleMode)
+                .onChange(of: model.toggleMode) {
+                    UserDefaults.standard.set(model.toggleMode, forKey: "toggleMode")
+                    model.applyToggleMode()
+                    model.cancel()
+                }
+            Toggle("Save transcripts locally (History)", isOn: $model.saveHistory)
+                .onChange(of: model.saveHistory) { UserDefaults.standard.set(model.saveHistory, forKey: "saveHistory") }
+            Toggle("Insert text into the focused field", isOn: $model.autoInsert)
                 .onChange(of: model.autoInsert) { UserDefaults.standard.set(model.autoInsert, forKey: "autoInsert") }
+            Toggle("Stream text live while speaking", isOn: $model.liveStreaming)
+                .onChange(of: model.liveStreaming) { UserDefaults.standard.set(model.liveStreaming, forKey: "liveStreaming") }
+                .disabled(!model.autoInsert || model.paraphraseEnabled)
+            Toggle("Paraphrase with Bedrock before inserting (sends text to AWS)", isOn: $model.paraphraseEnabled)
+                .onChange(of: model.paraphraseEnabled) { model.saveParaphraseSettings() }
+            if model.paraphraseEnabled {
+                Grid(alignment: .leading, verticalSpacing: 6) {
+                    GridRow {
+                        Text("Model").font(.caption)
+                        TextField("Model ID", text: $model.paraphraseModel).font(.caption.monospaced())
+                    }
+                    GridRow {
+                        Text("Profile").font(.caption)
+                        TextField("AWS profile (blank = default)", text: $model.paraphraseProfile).font(.caption.monospaced())
+                    }
+                    GridRow {
+                        Text("Region").font(.caption)
+                        TextField("Region (blank = profile default)", text: $model.paraphraseRegion).font(.caption.monospaced())
+                    }
+                }
+                .textFieldStyle(.roundedBorder)
+                .onSubmit { model.saveParaphraseSettings() }
+                .onChange(of: model.paraphraseModel) { model.saveParaphraseSettings() }
+                .onChange(of: model.paraphraseProfile) { model.saveParaphraseSettings() }
+                .onChange(of: model.paraphraseRegion) { model.saveParaphraseSettings() }
+                HStack {
+                    Text(model.usingCustomPrompt ? "Using your custom prompt" : "Using the default prompt")
+                        .font(.caption).foregroundStyle(.secondary)
+                    Spacer()
+                    Button("Prompt…") {
+                        model.promptDraft = model.paraphrasePrompt
+                        model.editingPrompt = true
+                    }
+                }
+            }
             HStack {
                 Text("Text update interval").font(.callout)
                 Picker("Text update interval", selection: $model.pasteInterval) {
@@ -630,6 +819,7 @@ struct ControlView: View {
                     UserDefaults.standard.set(model.pasteInterval, forKey: "pasteInterval")
                 }.disabled(model.recording || model.busy)
                 Spacer()
+                Button("History…") { model.showHistory?() }
                 Button("Hotwords…") {
                     model.rejectSuggestion()
                     model.editingHotwords = true
@@ -639,7 +829,7 @@ struct ControlView: View {
                 Text(model.hotwordFeedback).font(.caption).foregroundStyle(.teal)
                     .fixedSize(horizontal: false, vertical: true)
             }
-            Text("For 🌐: System Settings → Keyboard → Press 🌐 key to → Do Nothing. If the shortcut stops responding after authorization, quit and reopen Floe.")
+            Text("Shortcuts: a single modifier (Fn, Right ⌥…) or any key/combo (F5, ⌃Space…). Non-modifier keys are swallowed while Floe runs. For 🌐: System Settings → Keyboard → Press 🌐 key to → Do Nothing. If the shortcut stops responding after authorization, quit and reopen Floe.")
                 .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
             Text(model.listenerStarted ? "Shortcut listener active" : "Shortcut listener inactive")
                 .font(.caption).foregroundStyle(model.listenerStarted ? Color.teal : Color.secondary)
@@ -652,11 +842,12 @@ struct ControlView: View {
                 Spacer()
                 Button("Quit") { NSApplication.shared.terminate(nil) }
             }
-            Text("Zipformer INT8 · Apple Silicon · Audio stays local and is not saved")
+            Text("Zipformer INT8 · Apple Silicon · Audio is never saved or uploaded")
                 .font(.caption2).foregroundStyle(.secondary)
         }
         .padding(24).frame(width: 410)
         .sheet(isPresented: $model.editingHotwords) { HotwordEditor(model: model) }
+        .sheet(isPresented: $model.editingPrompt) { PromptEditor(model: model) }
     }
 
     private func permission(_ title: String, allowed: Bool, action: @escaping () -> Void) -> some View {
@@ -745,7 +936,7 @@ struct HotwordSuggestionView: View {
     }
 }
 
-final class AppDelegate: NSObject, NSApplicationDelegate {
+final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     let model = AppModel()
     private var statusItem: NSStatusItem!
     private var window: NSWindow!
@@ -765,15 +956,50 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 }
             }
         }
-        NSApp.setActivationPolicy(.accessory)
+        // A regular app shows in the Dock and ⌘Tab; the menu bar item stays too.
+        NSApp.setActivationPolicy(.regular)
+        let mainMenu = NSMenu()
+        let appItem = NSMenuItem()
+        let appMenu = NSMenu()
+        appMenu.addItem(withTitle: "Settings…", action: #selector(showSettings), keyEquivalent: ",").target = self
+        appMenu.addItem(withTitle: "History…", action: #selector(openHistory), keyEquivalent: "y").target = self
+        appMenu.addItem(.separator())
+        appMenu.addItem(withTitle: "Hide Floe", action: #selector(NSApplication.hide(_:)), keyEquivalent: "h")
+        appMenu.addItem(withTitle: "Quit Floe", action: #selector(quit), keyEquivalent: "q").target = self
+        appItem.submenu = appMenu
+        mainMenu.addItem(appItem)
+        // Edit menu so ⌘C/⌘V/⌘A work in the settings text fields.
+        let editItem = NSMenuItem()
+        let editMenu = NSMenu(title: "Edit")
+        editMenu.addItem(withTitle: "Undo", action: Selector(("undo:")), keyEquivalent: "z")
+        editMenu.addItem(withTitle: "Redo", action: Selector(("redo:")), keyEquivalent: "Z")
+        editMenu.addItem(.separator())
+        editMenu.addItem(withTitle: "Cut", action: #selector(NSText.cut(_:)), keyEquivalent: "x")
+        editMenu.addItem(withTitle: "Copy", action: #selector(NSText.copy(_:)), keyEquivalent: "c")
+        editMenu.addItem(withTitle: "Paste", action: #selector(NSText.paste(_:)), keyEquivalent: "v")
+        editMenu.addItem(withTitle: "Select All", action: #selector(NSText.selectAll(_:)), keyEquivalent: "a")
+        editItem.submenu = editMenu
+        mainMenu.addItem(editItem)
+        let windowItem = NSMenuItem()
+        let windowMenu = NSMenu(title: "Window")
+        windowMenu.addItem(withTitle: "Close", action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w")
+        windowItem.submenu = windowMenu
+        mainMenu.addItem(windowItem)
+        NSApp.mainMenu = mainMenu
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         statusItem.button?.image = GlassArtwork.menuIcon()
         let menu = NSMenu()
         menu.addItem(withTitle: "Floe Settings…", action: #selector(showSettings), keyEquivalent: ",").target = self
+        let paraphraseItem = NSMenuItem(title: "Paraphrase（Bedrock 改写）", action: #selector(toggleParaphrase), keyEquivalent: "")
+        paraphraseItem.target = self
+        menu.addItem(paraphraseItem)
+        self.paraphraseItem = paraphraseItem
+        menu.addItem(withTitle: "History…", action: #selector(openHistory), keyEquivalent: "y").target = self
         menu.addItem(withTitle: "Copy Last Transcript", action: #selector(copyTranscript), keyEquivalent: "").target = self
         menu.addItem(.separator())
         menu.addItem(withTitle: "Quit", action: #selector(quit), keyEquivalent: "q").target = self
         statusItem.menu = menu
+        menu.delegate = self
         window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 458, height: 540),
             styleMask: [.titled, .closable], backing: .buffered, defer: false)
         window.title = "Floe"
@@ -790,7 +1016,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         bar.backgroundColor = .clear
         bar.hasShadow = false
         bar.ignoresMouseEvents = true
-        bar.level = .floating
+        bar.level = .statusBar
         bar.hidesOnDeactivate = false
         bar.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         bar.contentView = NSHostingView(rootView: RecordingBar(model: model))
@@ -820,6 +1046,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         guidePanel.isMovableByWindowBackground = true
         guidePanel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         model.showSettingsAfterPermission = { [weak self] in self?.showSettings() }
+        model.showHistory = { [weak self] in self?.openHistory() }
         model.restartForPermissions = { [weak self] in
             guard let self else { return }
             // Avoid a restart loop if the OS still reports stale access.
@@ -867,7 +1094,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 if !self.bar.isVisible {
                     let screen = NSScreen.screens.first { NSMouseInRect(NSEvent.mouseLocation, $0.frame, false) } ?? NSScreen.main
                     if let frame = screen?.visibleFrame {
-                        self.bar.setFrameOrigin(NSPoint(x: frame.maxX - RecordingBar.width - 24, y: frame.minY + 24))
+                        self.bar.setFrameOrigin(NSPoint(x: frame.midX - RecordingBar.width / 2, y: frame.minY + 24))
                     }
                     self.bar.orderFrontRegardless()
                 }
@@ -885,10 +1112,65 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc func showSettings() {
+        model.refreshInputDevices()
         NSApp.activate(ignoringOtherApps: true)
         window.makeKeyAndOrderFront(nil)
+    }
+    /// Floe lives in the menu bar; opening it again from Finder/Spotlight shows settings.
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        showSettings()
+        return false
+    }
+    private var paraphraseItem: NSMenuItem?
+    @objc func toggleParaphrase() {
+        model.paraphraseEnabled.toggle()
+        model.saveParaphraseSettings()
+    }
+    func menuWillOpen(_ menu: NSMenu) {
+        paraphraseItem?.state = model.paraphraseEnabled ? .on : .off
+    }
+    private var historyWindow: NSWindow?
+    @objc func openHistory() {
+        if historyWindow == nil {
+            let w = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 620, height: 560),
+                             styleMask: [.titled, .closable, .resizable, .miniaturizable], backing: .buffered, defer: false)
+            w.title = "Floe History"
+            w.isReleasedWhenClosed = false
+            w.contentView = NSHostingView(rootView: HistoryView(store: model.history))
+            w.center()
+            historyWindow = w
+        }
+        NSApp.activate(ignoringOtherApps: true)
+        historyWindow?.makeKeyAndOrderFront(nil)
     }
     @objc func copyTranscript() { model.copy() }
     @objc func quit() { NSApp.terminate(nil) }
     func applicationWillTerminate(_ notification: Notification) { model.shutdown() }
+}
+
+struct PromptEditor: View {
+    @ObservedObject var model: AppModel
+    @Environment(\.dismiss) private var dismiss
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Paraphrase prompt").font(.headline)
+            Text("Sent to Bedrock as the system prompt. The transcript arrives wrapped in <transcript>…</transcript>; your hotwords are appended as a glossary.")
+                .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            TextEditor(text: $model.promptDraft)
+                .font(.system(size: 12))
+                .frame(minHeight: 280)
+                .overlay(RoundedRectangle(cornerRadius: 6).stroke(.secondary.opacity(0.3)))
+            HStack {
+                Button("Reset to Default") { model.promptDraft = Paraphraser.defaultPrompt }
+                Spacer()
+                Button("Cancel") { dismiss() }.keyboardShortcut(.cancelAction)
+                Button("Save") {
+                    model.paraphrasePrompt = model.promptDraft
+                    model.objectWillChange.send()
+                    dismiss()
+                }.keyboardShortcut(.defaultAction)
+            }
+        }
+        .padding(18).frame(width: 520)
+    }
 }
