@@ -12,8 +12,8 @@ Floe is a local speech-to-text and voice typing app for Mac and Android. Dictate
 
 | Platform | Download | Requirements |
 | --- | --- | --- |
-| Mac | [Floe 0.0.1 DMG](https://github.com/WangHong-yang/Floe/releases/download/v0.0.1/Floe-0.0.1-arm64.dmg) | Apple Silicon · macOS 14+ |
-| Android | [Floe 0.0.1 APK](https://github.com/WangHong-yang/Floe/releases/download/android-v0.0.1/Floe-Android-0.0.1.apk) | Android 8.0+ · about 218 MB |
+| Mac | [Floe 0.0.1 DMG](https://github.com/WangHong-yang/Floe/releases/download/v0.0.1/Floe-0.0.1-arm64.dmg?download=1) | Apple Silicon · macOS 14+ |
+| Android | [Floe 0.0.1 APK](https://github.com/WangHong-yang/Floe/releases/download/android-v0.0.1/Floe-Android-0.0.1.apk?raw=true) | Android 8.0+ · about 218 MB |
 
 [Release notes and SHA-256 checksums](https://github.com/WangHong-yang/Floe/releases). Both are preview builds with the offline speech model included.
 
