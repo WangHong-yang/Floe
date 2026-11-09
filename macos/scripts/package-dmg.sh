@@ -52,14 +52,18 @@ Updates to this preview may require granting permissions again.
 
 SET UP THE SHORTCUT
 System Settings > Keyboard > Press Globe key to > Do Nothing.
-Focus a text field, hold Globe / Fn to speak, then release to finish.
-Right Option is available as an alternate shortcut in Floe's settings.
+Focus a text field, press Globe / Fn to start, speak, then press again
+to finish. Esc cancels. Hold-to-talk, Right Option and custom shortcuts
+are available in Floe's settings.
 
 Requires Apple Silicon and macOS 14 or later. The model is included.
 Speech recognition runs locally; audio is not uploaded or saved.
+Local transcript history is on by default; disable or clear it in Settings.
+Optional Bedrock text rewriting is off by default. If enabled, final text
+and hotwords are sent to AWS using your local credentials.
 
 Source and release downloads: https://github.com/WangHong-yang/Floe
 EOF
 hdiutil create -ov -volname "Floe $VERSION" -srcfolder "$STAGING" -format UDZO -imagekey zlib-level=9 "$OUTPUT"
-shasum -a 256 "$OUTPUT" > "$OUTPUT.sha256"
+(cd "$ROOT/dist" && shasum -a 256 "$(basename "$OUTPUT")" > "$(basename "$OUTPUT").sha256")
 echo "Created: $OUTPUT"

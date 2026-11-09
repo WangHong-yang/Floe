@@ -3,3 +3,8 @@
 .star-callout{display:flex;align-items:center;justify-content:space-between;gap:32px;padding-block:60px 75px;border-top:1px solid var(--line)}.star-callout h2{font-size:38px;margin-bottom:16px}.star-callout p{color:var(--muted);font-size:15px;line-height:1.7;margin:0}.star-button{display:inline-flex;align-items:center;gap:28px;border:1px solid #555;border-radius:9px;padding:17px 22px;font-size:14px;white-space:nowrap;transition:border-color .2s,background .2s}.star-button:hover{border-color:#aaa;background:#1a1a1a}.star-button span{font-size:22px;line-height:1}@media(max-width:767px){.star-callout{align-items:flex-start;flex-direction:column;padding-block:45px 55px}.star-callout h2{font-size:34px}.star-callout br{display:none}}
 
 .product-hunt{padding-bottom:48px}.product-hunt a{display:inline-block;border-radius:10px}.product-hunt img{display:block;max-width:100%;height:auto}
+
+/* Dual-platform downloads retain the existing dark, silver palette. */
+.button-secondary{background:transparent;color:var(--fg);border:1px solid #666}.button-secondary:hover{background:#202020}.actions{gap:16px;flex-wrap:wrap}.platform-heading{margin:20px 0 10px}.platform-heading h3{font-size:30px;margin:0 0 10px}.platform-heading p{color:var(--muted);font-size:14px;line-height:1.6;margin:0}.android-heading{border-top:1px solid var(--line);padding-top:50px;margin-top:45px}
+
+@media(max-width:767px){h1{font-size:clamp(52px,16vw,74px)}.hero-copy{min-width:0}.actions{align-items:flex-start}.nav nav{gap:14px}.button{max-width:100%}.hero-bottom{overflow-wrap:anywhere}}

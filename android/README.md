@@ -2,6 +2,8 @@
 
 Offline Chinese/English dictation using sherpa-onnx 2.0.1 and X-ASR. The app interface is English, with an always-black background, flat typography and no card-style sections. Android 8.0+; ARM64 recommended. The universal APK also includes ARMv7 and x86_64.
 
+**[Download Floe Android 0.0.1 APK](https://github.com/WangHong-yang/Floe/releases/download/android-v0.0.1/Floe-Android-0.0.1.apk)** · [Release notes and checksum](https://github.com/WangHong-yang/Floe/releases/tag/android-v0.0.1)
+
 ## Install and enable
 
 Install the APK, open Floe, grant microphone permission, read the accessibility disclosure and enable Floe in Android Accessibility settings. Sideloaded apps on Android 13+ may require App info → menu → Allow restricted settings. Only allow a build you trust. Return to Floe and enable it.

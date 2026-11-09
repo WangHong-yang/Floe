@@ -2,37 +2,54 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="Offline voice typing for Apple Silicon Macs. Dictate in Chinese and English, including mixed speech, into your focused text field. Audio stays on your Mac.">
+<meta name="description" content="Offline voice typing for Mac and Android. Dictate in Chinese and English, including mixed speech, into your focused text field. Speech recognition runs on your device.">
 <meta name="theme-color" content="#080808">
-<title>Floe | Offline Chinese &amp; English Voice Typing for Mac</title>
+<title>Floe | Offline Chinese &amp; English Voice Typing for Mac and Android</title>
 <link rel="canonical" href="https://wanghong-yang.github.io/Floe/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Floe">
-<meta property="og:title" content="Floe | Offline Voice Typing for Mac">
-<meta property="og:description" content="Hold a key and dictate in Chinese and English. Local speech recognition for Apple Silicon Macs.">
+<meta property="og:title" content="Floe | Offline Voice Typing for Mac and Android">
+<meta property="og:description" content="Chinese and English voice typing on Mac and Android. Local speech recognition, with the model included.">
 <meta property="og:url" content="https://wanghong-yang.github.io/Floe/">
 <meta property="og:image" content="https://wanghong-yang.github.io/Floe/assets/floe-glass.png">
 <meta property="og:image:width" content="1800">
 <meta property="og:image:height" content="500">
 <meta property="og:image:alt" content="Floe glass sound wave">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Floe | Offline Voice Typing for Mac">
-<meta name="twitter:description" content="Local Chinese and English dictation for Apple Silicon Macs.">
+<meta name="twitter:title" content="Floe | Offline Voice Typing for Mac and Android">
+<meta name="twitter:description" content="Local Chinese and English dictation for Mac and Android.">
 <meta name="twitter:image" content="https://wanghong-yang.github.io/Floe/assets/floe-glass.png">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
-  "@type": "SoftwareApplication",
-  "name": "Floe",
-  "url": "https://wanghong-yang.github.io/Floe/",
-  "description": "Offline Chinese and English voice typing for Apple Silicon Macs, with streaming speech recognition and hotwords.",
-  "operatingSystem": "macOS 14 or later (Apple Silicon)",
-  "applicationCategory": "UtilitiesApplication",
-  "softwareVersion": "0.0.1",
-  "downloadUrl": "https://github.com/WangHong-yang/Floe/releases/download/v0.0.1/Floe-0.0.1-arm64.dmg",
-  "image": "https://wanghong-yang.github.io/Floe/assets/floe-glass.png",
-  "inLanguage": "en",
-  "sameAs": "https://github.com/WangHong-yang/Floe"
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "url": "https://wanghong-yang.github.io/Floe/",
+      "applicationCategory": "UtilitiesApplication",
+      "softwareVersion": "0.0.1",
+      "image": "https://wanghong-yang.github.io/Floe/assets/floe-glass.png",
+      "inLanguage": "en",
+      "sameAs": "https://github.com/WangHong-yang/Floe",
+      "name": "Floe for Mac",
+      "operatingSystem": "macOS 14 or later (Apple Silicon)",
+      "description": "Offline Chinese and English voice typing for Mac, with streaming speech recognition and hotwords.",
+      "downloadUrl": "https://github.com/WangHong-yang/Floe/releases/download/v0.0.1/Floe-0.0.1-arm64.dmg"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "url": "https://wanghong-yang.github.io/Floe/",
+      "applicationCategory": "UtilitiesApplication",
+      "softwareVersion": "0.0.1",
+      "image": "https://wanghong-yang.github.io/Floe/assets/floe-glass.png",
+      "inLanguage": "en",
+      "sameAs": "https://github.com/WangHong-yang/Floe",
+      "name": "Floe for Android",
+      "operatingSystem": "Android 8.0 or later",
+      "description": "Offline Chinese and English voice typing for Android, with a floating dictation control.",
+      "downloadUrl": "https://github.com/WangHong-yang/Floe/releases/download/android-v0.0.1/Floe-Android-0.0.1.apk"
+    }
+  ]
 }
 </script>
 <link rel="icon" href="assets/floe-mark.png"><link rel="stylesheet" href="style.css">
@@ -42,9 +59,9 @@
 <header class="nav wrap"><a class="brand" href="#" aria-label="Floe home">Floe<span class="brand-line"></span></a><nav aria-label="Main navigation"><a href="#experience">How it feels</a><a href="#install">Get started</a><a href="https://github.com/WangHong-yang/Floe" aria-label="Star Floe on GitHub">Star on GitHub ☆</a></nav></header>
 <main id="main">
 <section class="hero wrap">
-<div class="hero-copy"><h1>Your voice.<br><span>Into words.</span></h1><p>Offline voice typing for Mac.<br>Chinese, English, and both together.</p><div class="actions"><a class="button" href="https://github.com/WangHong-yang/Floe/releases/download/v0.0.1/Floe-0.0.1-arm64.dmg">Download for Mac <span aria-hidden="true">↓</span></a><a class="text-link" href="#experience">Try the interaction <span aria-hidden="true">↗</span></a></div></div>
+<div class="hero-copy"><h1>Your voice.<br><span>Into words.</span></h1><p>Offline voice typing for Mac and Android.<br>Chinese, English, and both together.</p><div class="actions"><a class="button" href="https://github.com/WangHong-yang/Floe/releases/download/v0.0.1/Floe-0.0.1-arm64.dmg">Download for Mac <span aria-hidden="true">↓</span></a><a class="button button-secondary" href="android/">Floe for Android <span aria-hidden="true">↓</span></a></div></div>
 <img class="hero-art" src="assets/floe-glass.png" alt="A clear glass surface shaped into a flowing sound wave" width="1800" height="500" fetchpriority="high">
-<div class="hero-bottom"><span>Made for Apple Silicon</span><span>macOS 14 or later</span><span>Recognition stays on your Mac</span></div>
+<div class="hero-bottom"><span>Apple Silicon · macOS 14+</span><span>Android 8.0+</span><span>Speech recognition stays on your device</span></div>
 </section>
 <section class="experience wrap" id="experience">
 <div class="section-heading"><h2>Less typing.<br>More you.</h2><p>Speak into the field you’re already using.<br>Chinese, English, or a little of both.</p></div>
@@ -56,13 +73,20 @@
 <p class="demo-note">An illustration of the flow. This preview does not use your microphone. Hold the button or focus it and hold Space.</p>
 </section>
 <section class="details wrap" aria-label="Features">
-<div class="feature-lead"><h2>On your Mac.<br>In your flow.</h2><p>A small tool for the things you want to say.</p></div>
-<div class="feature-list"><article><span class="feature-label">LOCAL BY DESIGN</span><h3>Your voice stays here.</h3><p>Recognition runs on your Mac. Floe doesn’t upload or save your audio. The model comes with the download.</p></article><article><span class="feature-label">TWO LANGUAGES, ONE THOUGHT</span><h3>Say it your way.</h3><p>Switch between Chinese and English as you speak. Add hotwords for names and terms you use often.</p></article><article><span class="feature-label">HOLD. SPEAK. RELEASE.</span><h3>Right where you’re writing.</h3><p>Hold Globe / Fn to dictate into your focused text field. A small waveform lets you know Floe is listening.</p></article></div>
+<div class="feature-lead"><h2>On your device.<br>In your flow.</h2><p>A small tool for the things you want to say.</p></div>
+<div class="feature-list"><article><span class="feature-label">LOCAL BY DESIGN</span><h3>Your voice stays here.</h3><p>Speech recognition runs on your device. Floe doesn’t upload or save your audio. The model comes with the download.</p></article><article><span class="feature-label">TWO LANGUAGES, ONE THOUGHT</span><h3>Say it your way.</h3><p>Switch between Chinese and English as you speak. On Mac, add hotwords for names and terms you use often.</p></article><article><span class="feature-label">START. SPEAK. FINISH.</span><h3>Right where you’re writing.</h3><p>On Mac, press your shortcut to start and finish, or choose hold-to-talk. On Android, tap or hold the floating ice control.</p></article></div>
 </section>
-<section class="install wrap" id="install"><div class="section-heading"><h2>A minute to set up.<br>Then just speak.</h2><p>The current download is a preview release.<br>Apple Silicon · macOS 14+ · About 141 MB</p></div>
-<ol class="steps"><li><span class="step-number">1</span><div><h3>Move Floe into Applications.</h3><p>Open the DMG, drag Floe into Applications, and eject the disk image.</p></div></li><li><span class="step-number">2</span><div><h3>Open it once.</h3><p>This preview is not Apple-notarized. If macOS blocks it, follow the steps below.</p><details><summary>“Floe.app” Not Opened?</summary><div class="answer"><ol><li>Click <strong>Done</strong>, rather than Move to Trash.</li><li>Open <strong>System Settings → Privacy & Security</strong>.</li><li>Find the Floe warning, click <strong>Open Anyway</strong>, authenticate, then confirm <strong>Open</strong>.</li></ol><p>Only approve the download from this repository. Managed Macs may restrict this option.</p></div></details></div></li><li><span class="step-number">3</span><div><h3>Allow three permissions.</h3><p>Use the Allow buttons in Floe’s settings, then enable Floe in each permission list.</p><div class="permissions"><span>Microphone<small>Hear your voice</small></span><span>Input Monitoring<small>Detect the shortcut</small></span><span>Accessibility<small>Insert your words</small></span></div><details><summary>Floe isn’t in the permission list?</summary><div class="answer"><p>For Input Monitoring and Accessibility, drag Floe from Applications into the list and enable it. You can also drag the icon from Floe’s settings. Quit and reopen Floe if macOS asks, or if the shortcut doesn’t respond.</p></div></details></div></li><li><span class="step-number">4</span><div><h3>Give the Globe key to Floe.</h3><p>In System Settings → Keyboard, set “Press Globe key to” to <strong>Do Nothing</strong>. Focus a text field, hold Globe / Fn, and speak. Right Option is available as an alternate.</p></div></li></ol>
+<section class="install wrap" id="install"><div class="section-heading"><h2>A minute to set up.<br>Then just speak.</h2><p>Choose your device. Both downloads are previews.<br>The offline speech model is included.</p></div>
+<div class="platform-heading"><h3>Mac</h3><p>Apple Silicon · macOS 14+ · See the DMG size on the release page</p></div>
+<ol class="steps"><li><span class="step-number">1</span><div><h3>Move Floe into Applications.</h3><p>Open the DMG, drag Floe into Applications, and eject the disk image.</p></div></li><li><span class="step-number">2</span><div><h3>Open it once.</h3><p>This preview is not Apple-notarized. If macOS blocks it, follow the steps below.</p><details><summary>“Floe.app” Not Opened?</summary><div class="answer"><ol><li>Click <strong>Done</strong>, rather than Move to Trash.</li><li>Open <strong>System Settings → Privacy & Security</strong>.</li><li>Find the Floe warning, click <strong>Open Anyway</strong>, authenticate, then confirm <strong>Open</strong>.</li></ol><p>Only approve the download from this repository. Managed Macs may restrict this option.</p></div></details></div></li><li><span class="step-number">3</span><div><h3>Allow three permissions.</h3><p>Use the Allow buttons in Floe’s settings, then enable Floe in each permission list.</p><div class="permissions"><span>Microphone<small>Hear your voice</small></span><span>Input Monitoring<small>Detect the shortcut</small></span><span>Accessibility<small>Insert your words</small></span></div><details><summary>Floe isn’t in the permission list?</summary><div class="answer"><p>For Input Monitoring and Accessibility, drag Floe from Applications into the list and enable it. You can also drag the icon from Floe’s settings. Quit and reopen Floe if macOS asks, or if the shortcut doesn’t respond.</p></div></details></div></li><li><span class="step-number">4</span><div><h3>Give the Globe key to Floe.</h3><p>In System Settings → Keyboard, set “Press Globe key to” to <strong>Do Nothing</strong>. Focus a text field, press Globe / Fn to start, speak, and press again to finish. Hold-to-talk and custom shortcuts are available in Floe’s settings.</p></div></li></ol>
+<div class="platform-heading android-heading" id="android"><h3>Android</h3><p>Android 8.0+ · Universal APK · About 218 MB</p></div>
+<ol class="steps">
+<li><span class="step-number">1</span><div><h3>Install the APK.</h3><p>Download Floe for Android, open the APK, and allow installation from your browser or file manager if Android asks. This is a debug-signed preview distributed outside Google Play.</p></div></li>
+<li><span class="step-number">2</span><div><h3>Enable microphone and accessibility.</h3><p>Open Floe, grant microphone permission, read the accessibility disclosure, and enable Floe in Android Accessibility settings. Allow notifications so Floe can show its status.</p><details><summary>Android blocks the accessibility switch?</summary><div class="answer"><p>On Android 13 or later, open Floe’s App info, open the menu, and select <strong>Allow restricted settings</strong> if available. Then return to Accessibility settings. Only allow a build you trust; managed devices may restrict this option.</p></div></details></div></li>
+<li><span class="step-number">3</span><div><h3>Tap the ice. Speak into your field.</h3><p>Return to Floe and enable it. Focus a text field, tap the floating ice to start, wait for the red indicator, and speak. Tap again to finish. You can also hold to speak or drag the ice to move it. Your normal keyboard stays in place.</p></div></li>
+</ol>
 </section>
-<section class="faq wrap"><h2>A few things to know.</h2><div><details><summary>Does Floe need an internet connection?</summary><div class="answer"><p>Not for dictation. The download includes the speech model. Building from source requires a connection to download dependencies.</p></div></details><details><summary>What does Floe store?</summary><div class="answer"><p>Preferences and hotwords stay on your Mac. Audio and transcript history are not saved. Dictation uses the clipboard, so clipboard managers can see the final transcript.</p></div></details><details><summary>Why do permissions sometimes need to be granted again?</summary><div class="answer"><p>This preview uses ad-hoc signing. Updates can require granting permissions again. Developer ID signing and Apple notarization are not configured yet.</p></div></details><details><summary>Can I look at the source or report a problem?</summary><div class="answer"><p>Yes. <a href="https://github.com/WangHong-yang/Floe">Browse the repository</a> or <a href="https://github.com/WangHong-yang/Floe/issues">open an issue</a>. A license for Floe’s own source has not yet been selected; bundled dependencies carry their own licenses.</p></div></details></div></section>
+<section class="faq wrap"><h2>A few things to know.</h2><div><details><summary>Does Floe need an internet connection?</summary><div class="answer"><p>Not for speech recognition. Both downloads include the model. Mac has optional Bedrock text rewriting, off by default; enabling it sends the final transcript and hotwords to AWS. Building from source requires internet access.</p></div></details><details><summary>What does Floe store?</summary><div class="answer"><p>Neither platform saves audio. Mac stores local transcript history by default; you can turn it off or clear it in Settings. Android stores preferences but no transcript history. Clipboard managers can see text copied by Floe.</p></div></details><details><summary>Why do permissions sometimes need to be granted again?</summary><div class="answer"><p>The Mac preview uses ad-hoc signing, so updates can require granting permissions again. Apple notarization is not configured. Android uses a debug signing key; an incompatible update may require uninstalling, which clears preferences and permissions.</p></div></details><details><summary>Are the two versions identical?</summary><div class="answer"><p>Both use the same bilingual offline speech model. Mac also has hotwords, local transcript history and optional text rewriting. Android uses a floating control and accessibility insertion; hotwords and correction learning are not implemented.</p></div></details><details><summary>Can I look at the source or report a problem?</summary><div class="answer"><p>Yes. <a href="https://github.com/WangHong-yang/Floe">Browse the repository</a> or <a href="https://github.com/WangHong-yang/Floe/issues">open an issue</a>. A license for Floe’s own source has not yet been selected; bundled dependencies carry their own licenses.</p></div></details></div></section>
 <section class="star-callout wrap" aria-labelledby="star-heading"><div><h2 id="star-heading">Enjoying Floe?</h2><p>A star on GitHub is a small way to show your support<br>and help more people find it.</p></div><a class="star-button" href="https://github.com/WangHong-yang/Floe">Star on GitHub <span aria-hidden="true">☆</span></a></section>
 <div class="product-hunt wrap"><a href="https://www.producthunt.com/products/floe-4?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-floe-5" target="_blank" rel="noopener noreferrer"><img alt="Floe - Offline Voice Typing for Mac | Product Hunt" width="180" height="39" src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1306421&amp;theme=dark&amp;t=1793955228554"></a></div>
 </main>

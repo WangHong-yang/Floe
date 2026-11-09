@@ -8,17 +8,24 @@
 
 Enjoying Floe? **[Star us on GitHub](https://github.com/WangHong-yang/Floe)** to show your support and help others find it.
 
-Floe is a local speech-to-text and voice typing app for Apple Silicon Macs. Dictate in Chinese and English, including mixed-language speech, without a cloud transcription service. Hold 🌐 / Fn to speak, and Floe types into your focused text field as you talk.
+Floe is a local speech-to-text and voice typing app for Mac and Android. Dictate in Chinese and English, including mixed-language speech, without a cloud transcription service. On Mac, use a keyboard shortcut. On Android, use the floating ice control.
 
-**[Download Floe 0.0.1 for Apple Silicon](https://github.com/WangHong-yang/Floe/releases/download/v0.0.1/Floe-0.0.1-arm64.dmg)** · [Releases](https://github.com/WangHong-yang/Floe/releases)
+| Platform | Download | Requirements |
+| --- | --- | --- |
+| Mac | [Floe 0.0.1 DMG](https://github.com/WangHong-yang/Floe/releases/download/v0.0.1/Floe-0.0.1-arm64.dmg) | Apple Silicon · macOS 14+ |
+| Android | [Floe 0.0.1 APK](https://github.com/WangHong-yang/Floe/releases/download/android-v0.0.1/Floe-Android-0.0.1.apk) | Android 8.0+ · about 218 MB |
+
+[Release notes and SHA-256 checksums](https://github.com/WangHong-yang/Floe/releases). Both are preview builds with the offline speech model included.
 
 Requires **Apple Silicon** and **macOS 14 or later**. The speech model is included; recognition does not need an internet connection.
 
 ## Android
 
+[Explore Floe for Android and try the interactive demo](https://wanghong-yang.github.io/Floe/android/).
+
 The Android preview uses the same local Chinese/English model. See [Android setup and build instructions](android/README.md). Its floating control supports tap-to-toggle and hold-to-talk; hotwords are not implemented. Android 8.0 or later is required.
 
-The Android version is now **0.0.1**. The rebuilt APK is local only at `android/dist/Floe-Android-0.0.1.apk` and has not been uploaded to Releases. See [current build validation](android/validation/0.0.1.md).
+Android **0.0.1** is a debug-signed preview, distributed outside Google Play. Grant microphone permission and enable Floe in Android Accessibility settings. On Android 13+, you may first need App info → menu → Allow restricted settings. Return to Floe and enable it, then focus a field and tap or hold the floating ice control. This rebuilt preview has not been tested on a phone or emulator.
 
 ## Install on macOS
 
@@ -43,7 +50,7 @@ Only approve the copy downloaded from this repository's release. This creates an
 
 Apple's instructions: [Open a Mac app from an unknown developer](https://support.apple.com/guide/mac-help/mh40616/mac/). Future Developer ID-signed and notarized releases are intended to avoid the unidentified-developer warning.
 
-## Features
+## Mac features
 
 - Streaming, local Chinese and English recognition, including mixed-language speech.
 - Any shortcut you like: record a single modifier (Fn, Right ⌥, Left ⌃ …) or any key/combo (F5, ⌃Space …) with **Change…**. Fn and Right Option are one-click presets.
@@ -56,7 +63,7 @@ Apple's instructions: [Open a Mac app from an unknown developer](https://support
 - Editable hotwords and optional suggestions after corrections.
 - Transient clipboard updates during dictation; one full transcript is copied at the end.
 
-## Privacy
+## Mac privacy
 
 Speech recognition runs on your Mac using CPU inference. Floe never uploads or saves audio. Dictation uses the system clipboard and can therefore be visible to clipboard managers.
 
@@ -68,7 +75,7 @@ Hotword learning is enabled by default and can be disabled. It observes the text
 
 The build script downloads dependencies and model files from GitHub. Recognition itself does not use a cloud service.
 
-## Build
+## Build the Mac app
 
 Install Xcode Command Line Tools, then run from the repository root:
 
