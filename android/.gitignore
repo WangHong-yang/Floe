@@ -1,0 +1,12 @@
+.gradle/
+.kotlin/
+.idea/
+local.properties
+**/build/
+.cache/
+app/libs/*.aar
+app/src/main/assets/model/
+app/src/main/assets/licenses/
+*.iml
+
+dist/

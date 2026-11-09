@@ -1,8 +1,8 @@
-/vendor/
-/build/
-/dist/
-/design/
-/profiling/
+/macos/vendor/
+/macos/build/
+/macos/dist/
+/macos/design/
+/macos/profiling/
 .venv*/
 *.o
 .DS_Store

@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Floe</string>
+    <string name="accessibility_description">Floe uses Accessibility to show a floating voice control and read the focused text field to insert recognized words. It does not process password fields or save recordings or text field history. Speech recognition runs on your device. If direct typing is unavailable, Floe prompts you to paste manually from the system clipboard. You can turn off this service in Settings at any time.</string>
+</resources>

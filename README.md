@@ -1,6 +1,6 @@
-![Floe — glass voice waveform](Resources/FloeBanner.png)
+![Floe — glass voice waveform](assets/branding/FloeBanner.png)
 
-# Floe · Offline voice typing for Mac
+# Floe · Offline voice typing for Mac and Android
 
 **[Visit website](https://wanghong-yang.github.io/Floe/)** · [Star Floe on GitHub](https://github.com/WangHong-yang/Floe)
 
@@ -14,7 +14,13 @@ Floe is a local speech-to-text and voice typing app for Apple Silicon Macs. Dict
 
 Requires **Apple Silicon** and **macOS 14 or later**. The speech model is included; recognition does not need an internet connection.
 
-## Install
+## Android
+
+The Android preview uses the same local Chinese/English model. See [Android setup and build instructions](android/README.md). Its floating control supports tap-to-toggle and hold-to-talk; hotwords are not implemented. Android 8.0 or later is required.
+
+The Android version is now **0.0.1**. The rebuilt APK is local only at `android/dist/Floe-Android-0.0.1.apk` and has not been uploaded to Releases. See [current build validation](android/validation/0.0.1.md).
+
+## Install on macOS
 
 1. Download and open the DMG.
 2. Drag **Floe** into **Applications**.
@@ -67,16 +73,18 @@ The build script downloads dependencies and model files from GitHub. Recognition
 Install Xcode Command Line Tools, then run from the repository root:
 
 ```sh
-bash scripts/build.sh
-open dist/Floe.app
+bash macos/scripts/build.sh
+open macos/dist/Floe.app
 ```
 
-The first build requires access to GitHub. Downloaded runtime and model files are SHA-256 checked and cached in `vendor/`. Build output is in `build/` and `dist/`; these directories are ignored by Git.
+If the default preview SDK lacks SwiftUI macro plugins, select an installed stable SDK with `FLOE_MACOS_SDK_PATH=/path/to/MacOSX.sdk bash macos/scripts/build.sh`.
+
+The first build requires access to GitHub. Downloaded runtime and model files are SHA-256 checked and cached in `macos/vendor/`. Build output is in `macos/build/` and `macos/dist/`; these directories are ignored by Git.
 
 To build, replace `/Applications/Floe.app` and relaunch in one step:
 
 ```sh
-bash scripts/install.sh
+bash macos/scripts/install.sh
 ```
 
 ### Keep permissions across rebuilds
@@ -107,15 +115,15 @@ Grant permissions once after switching from ad-hoc to the certificate.
 To generate a drag-to-Applications disk image:
 
 ```sh
-bash scripts/package-dmg.sh
+bash macos/scripts/package-dmg.sh
 ```
 
-Output: `dist/Floe-0.0.1-arm64.dmg` and its SHA-256 checksum.
+Output: `macos/dist/Floe-0.0.1-arm64.dmg` and its SHA-256 checksum.
 
 ## Validation
 
 ```sh
-bash scripts/smoke-test.sh
+bash macos/scripts/smoke-test.sh
 ```
 
 The checks exercise real model inference, streaming text revisions, hotwords, audio resampling and permission-restart state. They do not open the microphone or type into other applications. A small supplied WAV test set is not a comprehensive accuracy or live-latency benchmark.
@@ -129,3 +137,13 @@ The checks exercise real model inference, streaming text revisions, hotwords, au
 Model package: `sherpa-onnx-x-asr-160ms-streaming-zipformer-transducer-zh-en-punct-int8-2026-06-05`. The INT8 encoder and joiner, FP32 decoder and vocabulary are bundled in the app. Third-party license texts are included with the app.
 
 See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for dependency and asset attribution. A project-wide license for Floe's own source has not yet been selected; the dependency licenses apply to their respective components.
+
+## Repository layout and versioning
+
+- `macos/`: Mac app, scripts and platform resources.
+- `android/`: Android app, Gradle build and platform resources.
+- `assets/branding/`: shared artwork.
+- `licenses/`: shared third-party license texts.
+- `docs/`: GitHub Pages website.
+
+Both platforms use `0.0.1`, `0.0.2`, `0.0.3`, and so on. Android `versionCode` must also increase on each published update; it is independent of the visible version name.

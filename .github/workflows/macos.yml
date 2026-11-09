@@ -1,0 +1,14 @@
+name: macOS build
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash macos/scripts/build.sh
+        env:
+          FLOE_SIGN_IDENTITY: '-'
+      - run: bash macos/scripts/smoke-test.sh
