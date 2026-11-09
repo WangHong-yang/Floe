@@ -8,3 +8,5 @@
 .button-secondary{background:transparent;color:var(--fg);border:1px solid #666}.button-secondary:hover{background:#202020}.actions{gap:16px;flex-wrap:wrap}.platform-heading{margin:20px 0 10px}.platform-heading h3{font-size:30px;margin:0 0 10px}.platform-heading p{color:var(--muted);font-size:14px;line-height:1.6;margin:0}.android-heading{border-top:1px solid var(--line);padding-top:50px;margin-top:45px}
 
 @media(max-width:767px){h1{font-size:clamp(52px,16vw,74px)}.hero-copy{min-width:0}.actions{align-items:flex-start}.nav nav{gap:14px}.button{max-width:100%}.hero-bottom{overflow-wrap:anywhere}}
+
+.android-icon{display:block;flex-shrink:0}

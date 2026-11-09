@@ -6,3 +6,9 @@
 .venv*/
 *.o
 .DS_Store
+
+# Local development records
+/.local/
+
+/android/VALIDATION.md
+/android/validation/

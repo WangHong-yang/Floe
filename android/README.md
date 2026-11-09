@@ -10,6 +10,8 @@ Install the APK, open Floe, grant microphone permission, read the accessibility 
 
 The system-bound accessibility service owns the preloaded model and floating control. Standby has a silent **Floe is enabled** notification in the drawer on a new MIN-importance channel, with no foreground service. Android normally omits MIN-importance status-bar icons; notification settings and OEM behavior can affect presentation. Grant notification permission to keep the drawer notification visible. Recording uses a separate microphone foreground service and the system microphone privacy indicator. Floe never hides the system recording/privacy indicator.
 
+This rebuilt preview has not been tested on a phone or emulator.
+
 **Installation compatibility:** this is a debug preview, not a Play Store release. If Android rejects an in-place update because the prior signing key is unavailable, uninstalling clears local preferences and overlay position and requires granting permissions again. No recording or transcript history is stored.
 
 ## Use the ice
