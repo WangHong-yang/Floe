@@ -13,17 +13,21 @@ enum GlassArtwork {
     }
 
     static func menuIcon() -> NSImage {
-        let image = NSImage(size: NSSize(width: 18, height: 18), flipped: false) { _ in
-            for (index, height) in [4.0, 8.0, 12.0, 8.0, 4.0].enumerated() {
-                let path = NSBezierPath(roundedRect: NSRect(x: 1 + Double(index) * 3.5,
-                    y: 9 - height / 2, width: 1.6, height: height), xRadius: 0.8, yRadius: 0.8)
-                NSColor.black.setFill()
-                path.fill()
-            }
+        statusArtwork
+    }
+
+    private static let statusArtwork: NSImage = {
+        let source = Bundle.main.url(forResource: "FloeMenuIcon", withExtension: "png")
+            .flatMap { NSImage(contentsOf: $0) }
+        let image = NSImage(size: NSSize(width: 28, height: 18), flipped: false) { _ in
+            guard let source else { return false }
+            let height = min(16, 28 * source.size.height / source.size.width)
+            source.draw(in: NSRect(x: 0, y: (18 - height) / 2, width: 28, height: height),
+                        from: .zero, operation: .sourceOver, fraction: 1)
             return true
         }
-        image.isTemplate = true
+        image.isTemplate = false
         image.accessibilityDescription = "Floe"
         return image
-    }
+    }()
 }

@@ -20,6 +20,8 @@
 	<string>2</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>14.0</string>
+	<key>LSUIElement</key>
+	<true/>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Floe recognizes speech on your Mac while you hold the shortcut. Audio is never uploaded or saved.</string>
 	<key>NSHighResolutionCapable</key>

@@ -958,8 +958,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 }
             }
         }
-        // A regular app shows in the Dock and ⌘Tab; the menu bar item stays too.
-        NSApp.setActivationPolicy(.regular)
+        // Keep Floe in the menu bar; settings windows do not need a Dock icon.
+        NSApp.setActivationPolicy(.accessory)
         let mainMenu = NSMenu()
         let appItem = NSMenuItem()
         let appMenu = NSMenu()
@@ -992,7 +992,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         statusItem.button?.image = GlassArtwork.menuIcon()
         let menu = NSMenu()
         menu.addItem(withTitle: "Floe Settings…", action: #selector(showSettings), keyEquivalent: ",").target = self
-        let paraphraseItem = NSMenuItem(title: "Paraphrase（Bedrock 改写）", action: #selector(toggleParaphrase), keyEquivalent: "")
+        let paraphraseItem = NSMenuItem(title: "Bedrock Paraphrase", action: #selector(toggleParaphrase), keyEquivalent: "")
         paraphraseItem.target = self
         menu.addItem(paraphraseItem)
         self.paraphraseItem = paraphraseItem

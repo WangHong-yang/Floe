@@ -42,6 +42,7 @@ cp "vendor/$MODEL/README.md" "$APP/Contents/Resources/Model/"
 printf '%s  %s\n' 28fc94d67aae53d8c58010fcfb16fc8c2f8dd263e03f3490c98210e354e8f914 Resources/bpe.vocab | shasum -a 256 -c
 rm -f "$APP/Contents/Resources/ViveLogo.png" "$APP/Contents/Resources/ViveIcon.icns"
 cp ../assets/branding/FloeLogo.png "$APP/Contents/Resources/"
+cp ../assets/branding/FloeMenuIcon.png "$APP/Contents/Resources/"
 cp Resources/bpe.vocab "$APP/Contents/Resources/Model/"
 SDK="${FLOE_MACOS_SDK_PATH:-$(xcrun --show-sdk-path)}"
 export CLANG_MODULE_CACHE_PATH="$ROOT/build/module-cache"
