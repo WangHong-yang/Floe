@@ -12,7 +12,7 @@ Floe is a local speech-to-text and voice typing app for Mac and Android. Dictate
 
 | Platform | Download | Requirements |
 | --- | --- | --- |
-| Mac | [Floe 0.0.1 DMG](https://github.com/WangHong-yang/Floe/releases/download/v0.0.1/Floe-0.0.1-arm64.dmg?download=1) | Apple Silicon · macOS 14+ |
+| Mac | [Floe 0.0.2 DMG](https://github.com/WangHong-yang/Floe/releases/download/v0.0.2-macos/Floe-0.0.2-arm64.dmg?download=1) | Apple Silicon · macOS 14+ |
 | Android | [Floe 0.0.1 APK](https://github.com/WangHong-yang/Floe/releases/download/android-v0.0.1/Floe-Android-0.0.1.apk?raw=true) | Android 8.0+ · about 218 MB |
 
 [Release notes and SHA-256 checksums](https://github.com/WangHong-yang/Floe/releases). Both are preview builds with the offline speech model included.
@@ -35,7 +35,7 @@ Android **0.0.1** is a debug-signed preview, distributed outside Google Play. Gr
 4. Grant Microphone, Input Monitoring and Accessibility access in System Settings. You can drag the app icon from Floe's settings into the relevant permission list.
 5. If you use 🌐 as the shortcut, set **System Settings → Keyboard → Press 🌐 key to → Do Nothing**.
 
-**Preview release:** version 0.0.1 is ad-hoc signed and has not been notarized by Apple. macOS may block the first launch. Updates to this preview can require granting permissions again. Developer ID signing and notarization are not yet configured.
+**Preview release:** version 0.0.2 is ad-hoc signed and has not been notarized by Apple. macOS may block the first launch. Updates to this preview can require granting permissions again. Developer ID signing and notarization are not yet configured.
 
 ## First launch on macOS
 
@@ -125,7 +125,7 @@ To generate a drag-to-Applications disk image:
 bash macos/scripts/package-dmg.sh
 ```
 
-Output: `macos/dist/Floe-0.0.1-arm64.dmg` and its SHA-256 checksum.
+Output: `macos/dist/Floe-0.0.2-arm64.dmg` and its SHA-256 checksum.
 
 ## Validation
 

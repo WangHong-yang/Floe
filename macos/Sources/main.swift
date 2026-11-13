@@ -1,6 +1,19 @@
 import AppKit
 import AVFoundation
 import SwiftUI
+import ServiceManagement
+
+// Read the installed app's system registration without starting recognition.
+if CommandLine.arguments.contains("--login-item-status") {
+    switch SMAppService.mainApp.status {
+    case .enabled: print("enabled")
+    case .requiresApproval: print("requires-approval")
+    case .notRegistered: print("not-registered")
+    case .notFound: print("not-found")
+    @unknown default: print("unknown")
+    }
+    exit(0)
+}
 
 if CommandLine.arguments.contains("--test-preferences-migration") {
     guard PreferencesMigration.test() else { exit(1) }

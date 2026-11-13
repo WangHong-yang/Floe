@@ -4,6 +4,7 @@ import AVFoundation
 import Combine
 
 final class AppModel: ObservableObject {
+    let loginItem = LoginItem()
     @Published var status = "Loading local model…"
     @Published var text = ""
     @Published var ready = false
@@ -766,6 +767,7 @@ struct ControlView: View {
                     model.applyToggleMode()
                     model.cancel()
                 }
+            LoginItemView(loginItem: model.loginItem)
             Toggle("Save transcripts locally (History)", isOn: $model.saveHistory)
                 .onChange(of: model.saveHistory) { UserDefaults.standard.set(model.saveHistory, forKey: "saveHistory") }
             Toggle("Insert text into the focused field", isOn: $model.autoInsert)
@@ -1108,6 +1110,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         if let guide = PermissionRestart.guide(in: CommandLine.arguments) {
             model.permissionGuide = guide
             model.guideChanged?(guide)
+        }
+        model.loginItem.configureDefault()
+        if !model.loginItem.errorMessage.isEmpty {
+            showSettings()
         }
     }
 
